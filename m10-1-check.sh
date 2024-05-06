@@ -16,4 +16,10 @@ echo "正常NET#總數："
 nic=`cat $LOG_FILE |grep -e "^net[0-9]" |grep ok |wc -l`
 echo "正常Oracle 資料庫總數"
 dbs=`cat $LOG_FILE |grep "COUNT(" -A 3 |grep "   "|wc -l `
-if [ hdd = "153" ] then echo "硬碟正常 153顆" 
+if [ hdd = "153" ]; then echo "硬碟正常 153顆" ; else echo "硬碟異常" ; fi
+if [ fan = "301" ]; then echo "風扇正常 301顆" ; else echo "風扇異常" ; fi
+if [ psu = "86" ]; then echo "電源供應器正常 86顆" ; else echo "電源供應器異常" ; fi
+if [ cpu = "43" ]; then echo "CPU正常 43顆" ; else echo "CPU異常" ; fi
+if [ ram = "176" ]; then echo "RAM正常 176顆" ; else echo "RAM異常" ; fi
+if [ nic = "237" ]; then echo "NET#正常 237顆" ; else echo "NET#異常" ; fi
+if [ dbs = "16" ]; then echo "Oracle 資料庫正常 16個" ; else echo "Oracle 資料庫異常" ; fi
