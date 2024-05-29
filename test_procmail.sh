@@ -1,1 +1,1 @@
-procmail VERBOSE=on ~/.procmailrc < test_cbm_zip.txt
+procmail VERBOSE=on ~/.procmailrc < test_cbm_zip.eml
