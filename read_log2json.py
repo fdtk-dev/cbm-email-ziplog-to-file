@@ -12,7 +12,8 @@ import datetime
 def save_status_to_csv(log_date, hostname, status_dict, csv_filename):
     header = ["date", "hostname"] + list(status_dict.keys())
     rows = [log_date, hostname] + list(status_dict.values())
-    print(rows)
+    # print(header)
+    # print(rows)
     if not os.path.exists(csv_filename):
         with open(csv_filename, "w") as csv_file:
             writer = csv.writer(csv_file)
@@ -44,9 +45,13 @@ def one_day_log_dictory_key_by_hostname(log_string):
         extracted_strings[hostname] = string
     return extracted_strings
 
-# Get the two newest files
-# newest_files = files[:2]
-# log_date = newest_files[0].split("_")[0][:10]
+def log_dict_key_by_div(log_string):
+    pattern = r"<div id=(.*?)>(.*?)</div id=\1>"
+    extracted_strings = {}
+    matches = re.findall(pattern, log_string, re.DOTALL)
+    host_dict_extracted = dict(matches)
+    return host_dict_extracted
+
 def main(cmd_args):
     print(cmd_args)
     if cmd_args == "today":
@@ -76,19 +81,16 @@ def main(cmd_args):
         host_list = list(log_dict_key_by_hostname.keys())
         host_dict = {}
         for hostname in host_list:
-            filename = directory + "/" + log_date + "_" + hostname + ".raw"
-            div_pattern = r"<div id=(.*?)>(.*?)</div id=\1>"
-            div_content = re.findall(div_pattern, log_dict_key_by_hostname[hostname], re.DOTALL)
-            host_dict[hostname] = dict(div_content)
-
-            host_dict = read_log2json_and_status.showhardconf_status(hostname, host_dict)
-
             csv_filename = f"./cbm_log_csv/Status.csv"
             if not os.path.exists("./cbm_log_csv"):
                 os.makedirs("./cbm_log_csv")
-            status_dict = host_dict[hostname].get("Status")
-            save_status_to_csv(log_date, hostname, status_dict, csv_filename)
 
+            host_dict = log_dict_key_by_div(log_dict_key_by_hostname[hostname])
+            host_dict = read_log2json_and_status.showhardconf_status(host_dict)
+            host_dict = read_log2json_and_status.uptime_status(host_dict)
+            host_dict = read_log2json_and_status.sas2ircu_status(host_dict)
+            status_dict = host_dict.get("Status")
+            save_status_to_csv(log_date, hostname, status_dict, csv_filename)
 if __name__ == "__main__":
     # Specify the directory path
     directory = "/home/ceds_log/cbm_log"
