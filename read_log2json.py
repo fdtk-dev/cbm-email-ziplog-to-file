@@ -4,83 +4,108 @@ import re
 import json
 import re
 import read_log2json_and_status
+import sys
+import datetime
 
-# Specify the directory path
-directory = "./cbm_log"
 
-# Get the list of files in the directory
-files = os.listdir(directory)
 
-# Sort the files by modification time (newest first)
-files.sort(key=lambda x: os.path.getmtime(os.path.join(directory, x)), reverse=True)
+def save_status_to_csv(log_date, hostname, status_dict, csv_filename):
+    header = ["date", "hostname"] + list(status_dict.keys())
+    rows = [log_date, hostname] + list(status_dict.values())
+    print(rows)
+    if not os.path.exists(csv_filename):
+        with open(csv_filename, "w") as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(header)
+    with open(csv_filename, "a") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(rows)
+
+def bonding_two_files_to_one(file_list, cbm_log_dir):
+    line_raw = ""
+    for i, file in enumerate(file_list):
+        file_path = os.path.join(cbm_log_dir, file)
+        with open(file_path, "r") as f:
+            line_raw += f.read()
+    return line_raw
+def bonding_one_file_to_one(file, cbm_log_dir):
+    file_path = os.path.join(cbm_log_dir, file)
+    with open(file_path, "r") as f:
+        line_raw = f.read()
+    return line_raw
+
+def one_day_log_dictory_key_by_hostname(log_string):
+    pattern = r"<div hostname=(.*?)>(.*?)</div hostname=\1>"
+    extracted_strings = {}
+    matches = re.findall(pattern, log_string, re.DOTALL)
+    for match in matches:
+        hostname = match[0]
+        string = match[1]
+        extracted_strings[hostname] = string
+    return extracted_strings
 
 # Get the two newest files
-newest_files = files[:2]
-today = newest_files[0].split("_")[0][:10]
+# newest_files = files[:2]
+# log_date = newest_files[0].split("_")[0][:10]
+def main(cmd_args):
+    print(cmd_args)
+    if cmd_args == "today":
+        target_files = files[:2]
+        today_date = datetime.datetime.now().strftime("%Y%m%d%H")
+        print(target_files,today_date)
+        if target_files[0].split("-")[0][:8] != today_date[:8] and target_files[0].split("-")[2] != "pmc.txt":
+            print("今天的PMC檔案不存在，請確認。" + target_files[0].split("-")[2] )
+            sys.exit()
+        if target_files[1].split("-")[1][:8] != today_date[:8] and target_files[1].split("-")[2] != "ceds.txt":
+            print("今天的PMC檔案不存在，請確認。")
+            sys.exit()
+    elif cmd_args == "all":
+        target_files = sorted(files)
+        csv_filename = f"./cbm_log_csv/Status.csv"
+        if os.path.exists(csv_filename):
+            os.remove(csv_filename)
+    else:
+        target_files = files[:2]
 
-# Read the contents of the files and store them in the 'lines-1' and 'lines-2' variables
-lines_1_raw = ""
-lines_2_raw = ""
-lines_1 = []
-lines_2 = []
-for i, file in enumerate(newest_files):
-    file_path = os.path.join(directory, file)
-    print(file_path)
-    with open(file_path, "r") as f:
-        if i == 0:
-            lines_1_raw = f.read()
-            lines_1.extend(f.readlines())
-        elif i == 1:
-            lines_2_raw = f.read()
-            lines_2.extend(f.readlines())
-lines_raw = lines_1_raw + lines_2_raw
+    for filename in target_files:
+        print(filename)
+        # lines_raw = bonding_two_files_to_one(newest_files, directory)
+        lines_raw = bonding_one_file_to_one(filename, directory)
+        log_dict_key_by_hostname = one_day_log_dictory_key_by_hostname(lines_raw)
+        log_date = filename.split("_")[0][:10]
+        host_list = list(log_dict_key_by_hostname.keys())
+        host_dict = {}
+        for hostname in host_list:
+            filename = directory + "/" + log_date + "_" + hostname + ".raw"
+            div_pattern = r"<div id=(.*?)>(.*?)</div id=\1>"
+            div_content = re.findall(div_pattern, log_dict_key_by_hostname[hostname], re.DOTALL)
+            host_dict[hostname] = dict(div_content)
 
-# Print the contents of the 'lines-1' and 'lines-2' variables
-# print(lines_1_raw)
-# Define the regex pattern
-pattern = r"<div hostname=(.*?)>(.*?)</div hostname=\1>"
+            host_dict = read_log2json_and_status.showhardconf_status(hostname, host_dict)
 
-# Create a dictionary to store the extracted strings
-extracted_strings = {}
+            csv_filename = f"./cbm_log_csv/Status.csv"
+            if not os.path.exists("./cbm_log_csv"):
+                os.makedirs("./cbm_log_csv")
+            status_dict = host_dict[hostname].get("Status")
+            save_status_to_csv(log_date, hostname, status_dict, csv_filename)
 
-# Find all matches of the pattern in the line
-matches = re.findall(pattern, lines_raw, re.DOTALL)
-# Iterate over the matches
-for match in matches:
-    # Extract the keyword and the string
-    hostname = match[0]
-    string = match[1]
-    # Add the string to the dictionary using the keyword as the key
-    extracted_strings[hostname] = string
-
-# Print the extracted strings
-host_list = list(extracted_strings.keys())
-host_dict = {}
-print(host_list)
-
-for hostname in host_list:
-    filename = directory + "/" + today + "_" + hostname + ".raw"
-    # Use regex to extract the content between <div id=key> and </div id=key>
-    div_pattern = r"<div id=(.*?)>(.*?)</div id=\1>"
-    div_content = re.findall(div_pattern, extracted_strings[hostname], re.DOTALL)
-    host_dict[hostname] = dict(div_content)
-
-    host_dict = read_log2json_and_status.showhardconf_status(hostname, host_dict)
-
-    # Write the dictionary to a JSON file
-    json_filename = f"./cbm_log_json/{today}_{hostname}.json"
-    with open(json_filename, "w") as json_file:
-        json.dump(host_dict[hostname], json_file)
-
-    csv_filename = f"./cbm_log_csv/{today}_{hostname}.csv"
-    status_dict = host_dict[hostname].get("Status")
-    header = status_dict.keys()
-    rows = [header] + [status_dict.values()]
-    print(header)
-    print(rows)
-    with open(csv_filename, "w") as csv_file:
-
-        writer = csv.writer(csv_file)
-        writer.writerows(rows)
-    # with open(filename, "w") as f:
-    #    f.write(extracted_strings[keyword])
+if __name__ == "__main__":
+    # Specify the directory path
+    directory = "/home/ceds_log/cbm_log"
+    # Get the list of files in the directory
+    files = os.listdir(directory)
+    # Sort the files by modification time (newest first)
+    files.sort(key=lambda x: os.path.getmtime(os.path.join(directory, x)), reverse=True)
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "all":
+            cmd_args = "all"
+            main(cmd_args)
+        elif sys.argv[1] == "today":
+            cmd_args = "today"
+            main(cmd_args)
+    elif len(sys.argv) > 2:
+        print("參數太多，只有一個參數才能接受，請重新輸入。 容許的參數: all，today 或沒有參數")
+    else:
+        cmd_args = "today"
+        print("沒有參數，預設為today。")
+        main(cmd_args)
