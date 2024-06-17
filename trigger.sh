@@ -12,3 +12,4 @@ if [ $file_ext = "zip" ]; then
 	message=$(date +%F)$(echo -e '\n')$(~/github/cbm-email-ziplog-to-file/m10-1-check.sh)
 	$python_bin /home/ceds_log/github/notify/notify_line.py "$message"
 fi
+$python_bin /home/ceds_log/github/cbm-email-ziplog-to-file/read_log2json.py today > /dev/null
