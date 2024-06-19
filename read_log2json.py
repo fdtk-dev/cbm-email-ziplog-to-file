@@ -7,20 +7,21 @@ import read_log2json_and_status
 import sys
 import datetime
 
+def append_status_to_csv_list(log_date, hostname, status_dict, csv_list):
+    csv_list.append([log_date, hostname] + list(status_dict.values()))
+    # print(csv_list[-1])
+    return csv_list
 
-
-def save_status_to_csv(log_date, hostname, status_dict, csv_filename):
+def save_status_to_csv(log_date, hostname, status_dict, csv_filename, csv_list=[]):
     header = ["date", "hostname"] + list(status_dict.keys())
-    rows = [log_date, hostname] + list(status_dict.values())
     # print(header)
-    # print(rows)
     if not os.path.exists(csv_filename):
         with open(csv_filename, "w") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(header)
     with open(csv_filename, "a") as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerow(rows)
+        writer.writerows(csv_list)
 
 def bonding_two_files_to_one(file_list, cbm_log_dir):
     line_raw = ""
@@ -77,9 +78,10 @@ def main(cmd_args):
         # lines_raw = bonding_two_files_to_one(newest_files, directory)
         lines_raw = bonding_one_file_to_one(filename, directory)
         log_dict_key_by_hostname = one_day_log_dictory_key_by_hostname(lines_raw)
-        log_date = filename.split("_")[0][:10]
+        log_date = filename.split("_")[0][:12]
         host_list = list(log_dict_key_by_hostname.keys())
         host_dict = {}
+        csv_list = []
         for hostname in host_list:
             csv_filename = f"./cbm_log_csv/Status.csv"
             if not os.path.exists("./cbm_log_csv"):
@@ -102,7 +104,8 @@ def main(cmd_args):
             host_dict = read_log2json_and_status.oracle_status(host_dict)
             host_dict = read_log2json_and_status.bmode_status(host_dict)
             status_dict = host_dict.get("Status")
-            save_status_to_csv(log_date, hostname, status_dict, csv_filename)
+            csv_list = append_status_to_csv_list(log_date, hostname, status_dict, csv_list)
+        save_status_to_csv(log_date, hostname, status_dict, csv_filename, csv_list)
 if __name__ == "__main__":
     # Specify the directory path
     directory = "/home/ceds_log/cbm_log"
