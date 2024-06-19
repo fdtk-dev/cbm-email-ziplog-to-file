@@ -77,7 +77,7 @@ def main(cmd_args):
         # lines_raw = bonding_two_files_to_one(newest_files, directory)
         lines_raw = bonding_one_file_to_one(filename, directory)
         log_dict_key_by_hostname = one_day_log_dictory_key_by_hostname(lines_raw)
-        log_date = filename.split("_")[0][:10]
+        log_date = filename.split("_")[0][:12]
         host_list = list(log_dict_key_by_hostname.keys())
         host_dict = {}
         for hostname in host_list:
