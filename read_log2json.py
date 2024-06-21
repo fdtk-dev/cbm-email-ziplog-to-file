@@ -78,9 +78,9 @@ def main(cmd_args):
         # lines_raw = bonding_two_files_to_one(newest_files, directory)
         lines_raw = bonding_one_file_to_one(filename, directory)
         log_dict_key_by_hostname = one_day_log_dictory_key_by_hostname(lines_raw)
-        date_tmp = filename.split("_")[0][:12]
+        date_tmp = filename.split("_")[0][:14]
         # example 202406210511
-        log_date =  date_tmp[0:4] + "-" +  date_tmp[4:6] + "-" + date_tmp[6:8] + " " +  date_tmp[8:10] + ":" date_tmp[10:12]
+        log_date =  date_tmp[0:4] + "-" +  date_tmp[4:6] + "-" + date_tmp[6:8] + " " +  date_tmp[8:10] + ":" + date_tmp[10:12] + ":" + date_tmp[12:14]
         host_list = list(log_dict_key_by_hostname.keys())
         host_dict = {}
         csv_list = []
