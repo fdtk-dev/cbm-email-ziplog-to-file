@@ -80,7 +80,7 @@ def main(cmd_args):
         log_dict_key_by_hostname = one_day_log_dictory_key_by_hostname(lines_raw)
         date_tmp = filename.split("_")[0][:12]
         # example 202406210511
-        log_date =  date_tmp[0:4] + "-" +  date_tmp[4:6] + "-" + date_tmp[6:8] + " " +  date_tmp[8:10] + ":" date_tmp[10:12]
+        log_date =  date_tmp[0:4] + "-" +  date_tmp[4:6] + "-" + date_tmp[6:8] + " " +  date_tmp[8:10] + ":" + date_tmp[10:12]
         host_list = list(log_dict_key_by_hostname.keys())
         host_dict = {}
         csv_list = []
@@ -105,6 +105,7 @@ def main(cmd_args):
             host_dict = read_log2json_and_status.cmmc_status(host_dict)
             host_dict = read_log2json_and_status.oracle_status(host_dict)
             host_dict = read_log2json_and_status.bmode_status(host_dict)
+            host_dict = read_log2json_and_status.nxinit_status(host_dict)
             status_dict = host_dict.get("Status")
             csv_list = append_status_to_csv_list(log_date, hostname, status_dict, csv_list)
         save_status_to_csv(log_date, hostname, status_dict, csv_filename, csv_list)
