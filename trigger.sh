@@ -9,8 +9,8 @@ if [ "$file_ext" == "zip" ]; then
 	unzip -o -d $work_dir $base_dir/$filename
 	/usr/bin/rclone copy --max-age 12h $work_dir gd:/05.其他案/高鐵CBM_PCDL-23-0315/cbm-log
 	source ~/github/cbm-email-ziplog-to-file/token.ini
-	message=$(date +%F)$(echo -e '\n')$(~/github/cbm-email-ziplog-to-file/m10-1-check.sh)
+	message=$today$(echo -e '\n')$(~/github/cbm-email-ziplog-to-file/m10-1-check.sh)
 	$python_bin /home/ceds_log/github/notify/notify_line.py "$message"
 	$python_bin /home/ceds_log/github/cbm-email-ziplog-to-file/read_log2json.py today  > /tmp/trigger_status_csv.log
-	/usr/bin/rclone copy --max-age 12h ~/cbm_log_csv gd:/05.其他案/高鐵CBM_PCDL-23-0315/cbm-log
+	/usr/bin/rclone copy ~/cbm_log_csv gd:/05.其他案/高鐵CBM_PCDL-23-0315/cbm-log
 fi
