@@ -63,7 +63,7 @@ def main(cmd_args):
             print("今天的PMC檔案不存在，請確認。" + target_files[0].split("-")[2] )
             sys.exit()
         if target_files[1].split("-")[1][:8] != today_date[:8] and target_files[1].split("-")[2] != "ceds.txt":
-            print("今天的PMC檔案不存在，請確認。")
+            print("今天的CEDS檔案不存在，請確認。")
             sys.exit()
     elif cmd_args == "all":
         target_files = sorted(files)
