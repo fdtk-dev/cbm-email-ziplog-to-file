@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 filename=$1
-today=Today:${filename:4:8}
+today=Today:${filename:0:8}
 file_ext=${filename:0-3}
 work_dir=~/cbm_log
 base_dir=~/cbm_zip
