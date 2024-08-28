@@ -126,7 +126,7 @@ def zpool_status(host_dict):
 
 def netstat_aun_status(host_dict):
     # Extract the netstat -aun information
-    netstat_aun_pattern = r".*\*\.(\d+)[ \.\*]*(\w*) *(\d*) (\w*.\w*).*EN\n"
+    netstat_aun_pattern = r"\n {6}\*\.(\d+)[ \.\*]*(\w*) *(\d*) (\w*.\w*).*LISTEN"
     netstat_aun_match = re.findall(netstat_aun_pattern, host_dict.get("netstat_aun", ""))
     # print(netstat_aun_match)
     netstat_aun_listen_list = list(set([item[0] for item in netstat_aun_match]))
@@ -338,7 +338,16 @@ def bmode_status(host_dict):
         host_dict["Status"]["SCADA_To_mode"] = "N/A"
     return host_dict
 
-
+def nxinit_status(host_dict):
+    # Extract the nxinit information
+    nxinit_pattern = r" *root *(\d*).* \.\/nxinit\n"
+    nxinit_match = re.findall(nxinit_pattern, host_dict.get("ps_ef", ""))
+    if nxinit_match:
+        # print(nxinit_match)
+        host_dict["Status"]["NXINIT"] = nxinit_match[0]
+    else:
+        host_dict["Status"]["NXINIT"] = "N/A"
+    return host_dict
 if __name__ == "__main__":
     # uptime_status()
     # Extract the uptime information

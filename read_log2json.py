@@ -7,20 +7,21 @@ import read_log2json_and_status
 import sys
 import datetime
 
+def append_status_to_csv_list(log_date, hostname, status_dict, csv_list):
+    csv_list.append([log_date, hostname] + list(status_dict.values()))
+    # print(csv_list[-1])
+    return csv_list
 
-
-def save_status_to_csv(log_date, hostname, status_dict, csv_filename):
+def save_status_to_csv(log_date, hostname, status_dict, csv_filename, csv_list=[]):
     header = ["date", "hostname"] + list(status_dict.keys())
-    rows = [log_date, hostname] + list(status_dict.values())
     # print(header)
-    # print(rows)
     if not os.path.exists(csv_filename):
         with open(csv_filename, "w") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(header)
     with open(csv_filename, "a") as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerow(rows)
+        writer.writerows(csv_list)
 
 def bonding_two_files_to_one(file_list, cbm_log_dir):
     line_raw = ""
@@ -61,8 +62,8 @@ def main(cmd_args):
         if target_files[0].split("-")[0][:8] != today_date[:8] and target_files[0].split("-")[2] != "pmc.txt":
             print("今天的PMC檔案不存在，請確認。" + target_files[0].split("-")[2] )
             sys.exit()
-        if target_files[1].split("-")[1][:8] != today_date[:8] and target_files[1].split("-")[2] != "ceds.txt":
-            print("今天的PMC檔案不存在，請確認。")
+        if target_files[1].split("-")[0][:8] != today_date[:8] and target_files[1].split("-")[2] != "ceds.txt":
+            print("今天的CEDS檔案不存在，請確認。" + target_files[1].split("-")[2] )
             sys.exit()
     elif cmd_args == "all":
         target_files = sorted(files)
@@ -77,9 +78,16 @@ def main(cmd_args):
         # lines_raw = bonding_two_files_to_one(newest_files, directory)
         lines_raw = bonding_one_file_to_one(filename, directory)
         log_dict_key_by_hostname = one_day_log_dictory_key_by_hostname(lines_raw)
+<<<<<<< HEAD
         log_date = filename.split("_")[0][:12]
+=======
+        date_tmp = filename.split("_")[0][:14]
+        # example 202406210511
+        log_date =  date_tmp[0:4] + "-" +  date_tmp[4:6] + "-" + date_tmp[6:8] + " " +  date_tmp[8:10] + ":" + date_tmp[10:12] + ":" + date_tmp[12:14]
+>>>>>>> e0ab0e98622a4ef741b64ec51a78e2cc471ee705
         host_list = list(log_dict_key_by_hostname.keys())
         host_dict = {}
+        csv_list = []
         for hostname in host_list:
             csv_filename = f"./cbm_log_csv/Status.csv"
             if not os.path.exists("./cbm_log_csv"):
@@ -101,8 +109,10 @@ def main(cmd_args):
             host_dict = read_log2json_and_status.cmmc_status(host_dict)
             host_dict = read_log2json_and_status.oracle_status(host_dict)
             host_dict = read_log2json_and_status.bmode_status(host_dict)
+            host_dict = read_log2json_and_status.nxinit_status(host_dict)
             status_dict = host_dict.get("Status")
-            save_status_to_csv(log_date, hostname, status_dict, csv_filename)
+            csv_list = append_status_to_csv_list(log_date, hostname, status_dict, csv_list)
+        save_status_to_csv(log_date, hostname, status_dict, csv_filename, csv_list)
 if __name__ == "__main__":
     # Specify the directory path
     directory = "/home/ceds_log/cbm_log"
