@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-LOG_DIR=~/cbm_log/
+LOG_DIR=/home/ceds_log/cbm_log/
 LOG_FILE=$LOG_DIR`date +%Y%m%d`*.txt
 hdd=`cat $LOG_FILE | grep -e "State                                   :" |grep -e "HSP" -e "OPT" -e "RDY"|wc -l`
 fan=`cat $LOG_FILE |grep FANU# |grep Normal|wc -l`
@@ -22,5 +22,5 @@ if [ $cpu = "43" ]; then echo "CPU正常 43顆" ; else echo "CPU異常" ; fi
 if [ $ram = "176" ]; then echo "RAM正常 176條" ; else echo "RAM異常" ; fi
 if [ $nic = "237" ]; then echo "NET#正常 237個" ; else echo "NET#異常" ; fi
 if [ $dbs = "16" ]; then echo "Oracle 資料庫正常 16個" ; else echo "Oracle 資料庫異常" ; fi
-if [ $zpool = "68" ]; then echo "zpool 資料正常 68個" ; else echo "zpool 資料異常" ; fi
+if [ $zpool = "67" ]; then echo "zpool 資料正常 67個" ; else echo "zpool 資料異常" ; fi
 if [ $nxport = "43" ]; then echo "nxport正常 43臺" ; else echo "nxport異常" ; fi
