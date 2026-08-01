@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 LOG_DIR=/home/ceds_log/cbm_log/
+ZIP_DIR=/home/ceds_log/cbm_zip_dev/
 LOG_FILES=$LOG_DIR`date +%Y%m%d`*.txt
+LOG_ZIP_FILE=$ZIP_DIR`date +%Y%m%d`*-cbm-log.zip
+unzip -o $LOG_ZIP_FILE -d /home/ceds_log/cbm_log
 LOG_FILE=$(echo $LOG_FILES |rev|cut -f 1-2 -d" "|rev)
 hdd=`cat $LOG_FILE | grep -e "State                                   :" |grep -e "HSP" -e "OPT" -e "RDY"|wc -l`
 fan=`cat $LOG_FILE |grep FANU# |grep Normal|wc -l`
